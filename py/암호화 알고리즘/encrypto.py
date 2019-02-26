@@ -28,28 +28,30 @@ def shufflerev(lis):
 
 def dummy(lis,state):
     if state==True:
-        dcount=r.randint(2,len(lis))
-        k=list()
-        for i in lis:
-            k.append(i)
+        while 1:
+            dcount=r.randint(3,96)
+            if dcount<len(lis):
+                break
+        for i in range(1,len(lis)+1):
             try:
-                if int(m.log(lis.index(i),dcount))==m.log(lis.index(i),dcount):
-                    k.append(chr(r.randint(32,126)))
+                if int(m.log(i,dcount))==m.log(i,dcount) and not(int(m.log(i,dcount))==0):
+                    lis.insert(i-1,chr(r.randint(32,126)))
             except ValueError:
-                pass        
-        lis=k
-        lis.append(chr(dcount+29))
+                pass
+        lis.append(chr(dcount+30))
         return lis
     elif state==False:
-        dcount=ord(lis.pop(-1))-29
-        save=''
+        dcount=ord(lis.pop(-1))-30
+        save=list()
+        save.append(lis[0])
         for i in range(len(lis)):
-            if (i+1)%(dcount)!=0:
-                save+=lis[i]
-        lis=list(save)
-        return lis
-#def pass:
-
+            if m.log(i+1,dcount)!=int(m.log(i+1,dcount)):
+                save.append(lis[i])
+        return save
+def password(pw,data):
+    edit=list()
+    for i in pw:
+        edit.append(ord(i)-32)
 #def hyperbolic:
 
 def encode(con,fe):
@@ -68,8 +70,9 @@ def encode(con,fe):
         op.append(con[container][i%complexepic][1][con[container][i%complexepic][0].index(fe[i])])
     for i in range(len(fe)):
         op.insert(i*2,chr(conlist[i]+32))
+    op=dummy(op,True)
     shuffle(op)
-    op.reverse()   
+    op.reverse()
     for i in op:
         enc+=i
     return enc
@@ -80,6 +83,7 @@ def decode(con,fe):
     fe=list(fe)
     fe.reverse()
     shufflerev(fe)
+    fe=dummy(fe,False)
     conlist=list()
     for i in range(int(len(fe)/2)):
         conlist.append(fe.pop(i))
@@ -89,11 +93,13 @@ def decode(con,fe):
     dec.reverse()
     shufflerev(dec)
     if not(dec[0]=='b' and dec[1]=="'" and dec[-1]=="'"):
-        return print('맞지 않은 정보입니다')
+        print('맞지 않은 정보입니다.')
+        dec=False
+        return False
     for i in range(2,len(dec)-1):
         no+=dec[i]
-    dec=no
     no=str(b.b64decode(no),encoding='utf-8')
+    dec=no
     return no
 print('암호화 및 복호화 알고리즘')
 
@@ -124,7 +130,7 @@ while True:
         elif add=='2' and con:
             ded=input('1.복호화 파일 선택\n2.한줄 복호화\n입력:')
             if ded=='1':
-                path=input('\n\파일 위치 선정:')
+                path=input('\n파일 위치 선정:')
                 f = open(path+'.txt', 'r')
                 lines = f.readlines()
                 data=''
@@ -135,12 +141,13 @@ while True:
             else:
                 data=input('\n복호화 정보 입력:')
                 print(decode(con,data))
-            et=input("저장하시겠습니까?(y/n):")
-            if et=='y':
-                save=input('저장할 이름을 입력하세요:')
-                f=open(save+'.txt','w')
-                f.write(dec)
-                f.close()
+            if dec!=False:
+                et=input("저장하시겠습니까?(y/n):")
+                if et=='y':
+                    save=input('저장할 이름을 입력하세요:')
+                    f=open(save+'.txt','w')
+                    f.write(dec)
+                    f.close()
         elif add=='3':
             complexepic=int(input('몇비트 암호화를 하시겠습니까?:'))
             con=list()
@@ -159,7 +166,7 @@ while True:
             with open(name+".txt",'wb') as fw:
                 pickle.dump(con,fw)
         elif add=='4':
-            name=input('불러들일 암호화코드 이름을 입력하세요')
+            name=input('불러들일 암호화코드 이름을 입력하세요:')
             with open(name+".txt","rb") as fr:
                 con = pickle.load(fr)
                 complexepic=len(con[0])
@@ -182,4 +189,3 @@ while True:
         print('해석용 구문이 아닙니다.')
     except TypeError:
         print('올바른 타입이 아닙니다')
-    
