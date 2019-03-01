@@ -1,7 +1,19 @@
 import pickle
 import time as t
 from datetime import date as d
-
+saver=0
+global b
+b=['year','month','date','hour','minute','time']
+def daylight():
+    global dateup
+    g=list()
+    for i in range(6):
+        s=input(b[i]+':')
+        if s=='':
+            g.append('True')
+        else:
+            g.append(int(s))
+    dateup=g
 def dataTranslate(text):
     f=open(text+'.txt','r')
     global data
@@ -29,14 +41,19 @@ def param(tex):
     for i in tex.split():
         ke.append(i.replace('[','').replace(']',''))
     return ke
-
 def datemanage(i,date):
+    global saver
+    tesum=0
     if i[1]=='오후':                    
         i[2]=[int(i[2].split(':')[0])+12,int(i[2].split(':')[1])]
     else:
         i[2]=[int(i[2].split(':')[0]),int(i[2].split(':')[1])]
     if i[2][0]==12 or i[2][0]==24:
-        i[2][0]-=12            
+        i[2][0]-=12
+    tesum+=int(i[3].split('/')[0])
+    saver+=tesum
+    if saver!=int(i[3].split('/')[1]):
+        print('Error:',str(date)+str(i))
     i[3]=int(i[3].split('/')[0])
     i[1]=date
     return i
@@ -52,59 +69,76 @@ def datasort(conv):
             elif len(i)==5 and len(i[4].split('/'))==2:
                 i[0]=i[0]+i.pop(1)
                 i[3]=i[3].split('/')[0]
+                
                 praydata.append(datemanage(i,date)) 
 
         except ValueError:
             pass
 
-def intodata(praydata,doc):
+def intodata(praydata):
     for i in praydata:
         doc[i[0]]['times'].append({'year':int(i[1][0].replace('년','')),'month':int(i[1][1].replace('월','')),'date':int(i[1][2].replace('일','')),'hour':i[2][0],'minute':i[2][1],'time':i[3]})
     return doc
-def personalFind(doc,name):
-	for i in doc.items():
-		if i[0]==name:
-			return i
-	return none
-def pdriver(doc,search):
+def personalFind(name):
+    forcedata=True
+    for i in doc.items():
+        if i[0]==name:
+            return i
+            forcedata=False
+    if forcedata:    
+        return False
+
+def pdriver(search):
     a=list()
-    b=['year','month','date','hour','minute','time']
-    for i in sorted(doc.items()):
+    for i in doc.items():
         for j in range(len(i[1]['times'])):
             check=True
             for k in range(6):
-                
-                if not(i[1]['times'][j][b[k]]==search[k] or search[k]==True):
+                if not(i[1]['times'][j][b[k]]==search[k] or search[k]=='True'):
                     check=False
             if check==True:
                 a.append([i[0],i[1]['times'][j]])
     return a
-
-def prayed(doc,state):
+def prayed(state):
     ssum=0
     global count
     count=0
     for i in doc.items():
         for j in range(len(i[1]['times'])):
             ssum+=i[1]['times'][j]['time']
-            count+=1
+        count+=len(i[1]['times'])
     if state=='sum':
         return ssum
     elif state=='ave':
         return ssum/count
     elif type(state)==int:
         return (ssum/state)
-def weeksum(doc,date):
-	k=pdriver(doc,'date',date)[0][0]
-	s=0
-	for i in pdriver(doc,'date',date):
-		if i[0]!=k:
-			print(k,s)
-			s=0
-			k=i[0]
-		s+=i[1]['time']
-	print(k,s)
-
+def week(date,state):
+    k=pdriver(date)[0][0]
+    s=0
+    pd=list()
+    sumd=0
+    for i in pdriver(date):
+        if i[0]!=k:
+            pd.append([k,s])
+            s=0
+            k=i[0]
+        s+=i[1]['time']
+        sumd+=i[1]['time']
+    pd.append([k,s])
+    if state:
+        return pd
+    else:
+        return sumd
+def nohave(date):
+    t=list()
+    d=list()
+    for i in week(date,True):
+        t.append(i[0])
+    for i in doc:
+        if not(i in t):
+            d.append(i)
+    return d
 conv=list()
 praydata=list()
 date=list()
@@ -113,7 +147,7 @@ kakao('kakao')
 for i in texts:
     conv.append(param(i))
 datasort(conv)
-intodata(praydata,doc)
+intodata(praydata)
 datasave(doc)
-print('총합:',prayed(doc,'sum'),'평균:',round(prayed(doc,'ave'),3),'목표 달성률:',str(round(prayed(doc,10000)*100,2))+'%')
+print('총합:',prayed('sum'),'평균:',round(prayed('ave'),3),'목표 달성률:',str(round(prayed(10000)*100,2))+'%')
 datasave(doc)
