@@ -4,6 +4,13 @@ from datetime import date as d
 saver=0
 global b
 b=['year','month','date','hour','minute','time']
+def dataread():
+    dataTranslate('data')
+    kakao('kakao')
+    for i in texts:
+        conv.append(param(i))
+    datasort(conv)
+    intodata(praydata)
 def daylight():
     global dateup
     g=list()
@@ -14,6 +21,7 @@ def daylight():
         else:
             g.append(int(s))
     dateup=g
+    return dateup
 def dataTranslate(text):
     f=open(text+'.txt','r')
     global data
@@ -53,7 +61,7 @@ def datemanage(i,date):
     tesum+=int(i[3].split('/')[0])
     saver+=tesum
     if saver!=int(i[3].split('/')[1]):
-        print('Error:',str(date)+str(i))
+        print('Error:',str(date)+str(i),str(i[3].split('/')[0])+'/'+str(saver)+' 수정')
     i[3]=int(i[3].split('/')[0])
     i[1]=date
     return i
@@ -98,7 +106,10 @@ def pdriver(search):
                     check=False
             if check==True:
                 a.append([i[0],i[1]['times'][j]])
-    return a
+    if a:
+        return a
+    else:
+        return False
 def prayed(state):
     ssum=0
     global count
@@ -114,22 +125,28 @@ def prayed(state):
     elif type(state)==int:
         return (ssum/state)
 def week(date,state):
-    k=pdriver(date)[0][0]
-    s=0
-    pd=list()
-    sumd=0
-    for i in pdriver(date):
-        if i[0]!=k:
-            pd.append([k,s])
-            s=0
-            k=i[0]
-        s+=i[1]['time']
-        sumd+=i[1]['time']
-    pd.append([k,s])
-    if state:
-        return pd
+    if pdriver(date):
+        k=pdriver(date)[0][0]
+        s=0
+        pd=list()
+        sumd=0
+        for i in pdriver(date):
+            if i[0]!=k:
+                pd.append([k,s])
+                s=0
+                k=i[0]
+            s+=i[1]['time']
+            sumd+=i[1]['time']
+        pd.append([k,s])
+        if state:
+            return pd
+        else:
+            return sumd
     else:
-        return sumd
+        if state:
+            return ''
+        else:
+            return 0
 def nohave(date):
     t=list()
     d=list()
@@ -139,15 +156,12 @@ def nohave(date):
         if not(i in t):
             d.append(i)
     return d
+def enter(date):
+    return round(len(week(date,True))/len(doc),2)
 conv=list()
 praydata=list()
 date=list()
-dataTranslate('data')
-kakao('kakao')
-for i in texts:
-    conv.append(param(i))
-datasort(conv)
-intodata(praydata)
+dataread()
 datasave(doc)
 print('총합:',prayed('sum'),'평균:',round(prayed('ave'),3),'목표 달성률:',str(round(prayed(10000)*100,2))+'%')
 datasave(doc)
